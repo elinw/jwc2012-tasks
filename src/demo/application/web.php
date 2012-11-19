@@ -142,25 +142,42 @@ class DemoApplicationWeb extends JApplicationWeb
 	{
 		try
 		{
-			// Set the controller prefix, add maps, and execute the appropriate controller.
-			$this->mimeType = 'application/json';
-			$this->input = new JInputJson;
-			$this->router = new JApplicationWebRouterRest($this, $this->input);
-			$this->router->setControllerPrefix('DemoService')
-				->setDefaultController('Test')
-				->addMaps(json_decode(file_get_contents(JPATH_CONFIGURATION . '/services.json'), true))
-				->execute($this->get('uri.route'));
+			// Determine if we are looking at a service request.
+			if (strpos($this->get('uri.route'), 'api/') === 0)
+			{
+				// Set the controller prefix, add maps, and execute the appropriate controller.
+				$this->mimeType = 'application/json';
+				$this->input = new JInputJson;
+				$this->router = new JApplicationWebRouterRest($this, $this->input);
+				$this->router->setControllerPrefix('DemoService')
+					->setDefaultController('Test')
+					->addMaps(json_decode(file_get_contents(JPATH_CONFIGURATION . '/services.json'), true))
+					->execute(substr($this->get('uri.route'), 4));
+			}
+			else
+			{
+				$this->router->setControllerPrefix('DemoPage')
+					->addMaps(json_decode(file_get_contents(JPATH_CONFIGURATION . '/pages.json'), true))
+					->setDefaultController('home')->execute($this->get('uri.route'));
+			}
 		}
 		catch (Exception $e)
 		{
-			$this->setHeader('status', '400', true);
-			$message = $e->getMessage();
-			$body = array('message' => $message, 'code' => $e->getCode(), 'type' => get_class($e));
+			if (strpos($this->get('uri.route'), 'api/') === 0)
+			{
+				$this->setHeader('status', '400', true);
+				$message = $e->getMessage();
+				$body = array('message' => $message, 'code' => $e->getCode(), 'type' => get_class($e));
 
-			$this->setBody(json_encode($body));
+				$this->setBody(json_encode($body));
+			}
+			else
+			{
+				$this->setBody($e->getMessage());
+			}
 		}
 	}
-
+	
 	/**
 	 * Method to get the application configuration data to be loaded.
 	 *
