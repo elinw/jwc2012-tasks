@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>Demo To Do List</title>
+	<link rel="stylesheet" href="bootstrap/css/bootstrap.css">
+	<link rel="stylesheet" href="todo.css">
+
+	<script src="lib/angular/angular.js"></script>
+	<script src="lib/angular/angular-resource.js"></script>
+	<script src="js/app.js"></script>
+	
+</head>
+
+<body class="well" ng-app="todoApp" ng-controller="AppCtrl">
+
+	<h1>Demo To Do List</h1>
+	<nav>
+		[ <a href="#/">Home</a> ]
+		[ <a href="#/about">About</a> ]
+	</nav>
+	<hr />
+	<div ng-view></div>
+
+</body>
+</html>

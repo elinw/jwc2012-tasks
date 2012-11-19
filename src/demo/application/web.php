@@ -142,22 +142,76 @@ class DemoApplicationWeb extends JApplicationWeb
 	{
 		try
 		{
-			// Set the controller prefix, add maps, and execute the appropriate controller.
-			$this->mimeType = 'application/json';
-			$this->input = new JInputJson;
-			$this->router = new JApplicationWebRouterRest($this, $this->input);
-			$this->router->setControllerPrefix('DemoService')
-				->setDefaultController('Test')
-				->addMaps(json_decode(file_get_contents(JPATH_CONFIGURATION . '/services.json'), true))
-				->execute($this->get('uri.route'));
+			// Determine if we are looking at a service request.
+			if (strpos($this->get('uri.route'), 'api/') === 0)
+			{
+				// Set the controller prefix, add maps, and execute the appropriate controller.
+				$this->mimeType = 'application/json';
+				$this->input = new JInputJson;
+				$this->router = new JApplicationWebRouterRest($this, $this->input);
+				$this->router->setControllerPrefix('DemoService')
+					->setDefaultController('Test')
+					->addMaps(json_decode(file_get_contents(JPATH_CONFIGURATION . '/services.json'), true))
+					->execute(substr($this->get('uri.route'), 4));
+			}
+			else
+			{
+				$this->router->setControllerPrefix('DemoPage')
+					->addMaps(json_decode(file_get_contents(JPATH_CONFIGURATION . '/pages.json'), true))
+					->setDefaultController('home')->execute($this->get('uri.route'));
+			}
 		}
 		catch (Exception $e)
 		{
-			$this->setHeader('status', '400', true);
-			$message = $e->getMessage();
-			$body = array('message' => $message, 'code' => $e->getCode(), 'type' => get_class($e));
+			if (strpos($this->get('uri.route'), 'api/') === 0)
+			{
+				$this->setHeader('status', '400', true);
+				$message = $e->getMessage();
+				$body = array('message' => $message, 'code' => $e->getCode(), 'type' => get_class($e));
 
-			$this->setBody(json_encode($body));
+				if ($this->get('debug', false))
+				{
+					$backtrace = $e->getTrace();
+					$trace = array();
+					for ($i = count($backtrace) - 1; $i >= 0; $i--)
+					{
+						$line = '';
+						if (isset($backtrace[$i]['class']))
+						{
+							$line .= sprintf("%s%s%s()", $backtrace[$i]['class'], $backtrace[$i]['type'], $backtrace[$i]['function']);
+						}
+						else
+						{
+							$line .= sprintf("%s()", $backtrace[$i]['function']);
+						}
+
+						if (isset($backtrace[$i]['file']))
+						{
+							$line .= sprintf(' @ %s:%d', $backtrace[$i]['file'], $backtrace[$i]['line']);
+						}
+						$trace[] = $line;
+					}
+					$body['trace'] = $trace;
+				}
+				$this->setBody(json_encode($body));
+
+				// If we're running on Zend Server, trigger a monitor custom event.
+				if (function_exists('zend_monitor_custom_event'))
+				{
+					zend_monitor_custom_event(get_class($e), $e->getMessage());
+				}
+
+				// If this is a ZendJobQueue call then set a message.
+				if (class_exists('ZendJobQueue') && $this->input->server->getInteger('HTTP_X_ZEND_JOB_ID') > 0)
+				{
+					$this->setHeader('status', '200', true);
+					ZendJobQueue::setCurrentJobStatus(ZendJobQueue::FAILED, $e->getMessage());
+				}
+			}
+			else
+			{
+				die($e->getMessage());
+			}
 		}
 	}
 

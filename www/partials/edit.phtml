@@ -1,0 +1,18 @@
+
+<form>
+<h2>Editing: {{item.name}} ({{item.task_id}})</h2>
+<ul>
+	<li>Name: <input ng-model="item.name"></li>
+	<li>Created: <input ng-model="item.date_created" ></li>
+	<li>Modified: <input ng-model="item.date_modified" ></li>
+	<li>Author: <input ng-model="item.author" ></li>
+</ul>
+<p>Task is currently: 
+	<input type="checkbox" ng-model="item.state" >
+	<span ng-show="item.state">Completed</span>
+	<span ng-show="!item.state">Pending</span>
+</p>
+<textarea ng-model="item.content"></textarea>
+<br />
+<button class="btn btn-success" ng-click="update(item)">Save</button>
+</form>

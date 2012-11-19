@@ -1,0 +1,9 @@
+{
+	"debug": true,
+	"db_driver":"mysql",
+	"db_host":"127.0.0.1",
+	"db_user":"demo",
+	"db_pass":"demouser",
+	"db_name":"jwc_tasks",
+	"db_prefix":"demo_"
+}

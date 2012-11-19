@@ -1,0 +1,21 @@
+
+	<p>Remaining <strong>{{remaining()}}</strong> of <strong>{{items.length}}</strong>
+	[ <a href ng-click="archive()">archive</a> ]
+	</p>
+
+	<ul class="unstyled">
+		<li ng-repeat="item in items">
+			<input type="checkbox" ng-model="item.state" ng-click="update(item)" ><a href="#/tasks/{{item.task_id}}">{{ item.name }}</a>
+		</li>
+	</ul>
+
+
+
+	<form name="newItemForm">
+		<input name="newItemName" ng-model="newItem.name" ng-maxlength="10">
+		<span ng-show="newItemForm.newItemName.$error.maxlength">Title is too long!</span>
+		<span ng-show="!newItemForm.newItemName.$error.maxlength">{{10 - newItem.name.length}} characters left.</span>
+		<button class="btn btn-primary" 
+			ng-click="add(newItem)"
+			ng-disabled="!newItem.name">add</button>
+	</form>

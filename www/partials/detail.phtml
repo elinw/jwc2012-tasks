@@ -1,0 +1,14 @@
+<h2>{{item.name}}</h2> 
+<nav>
+[ <a href="#/tasks/{{item.task_id}}/edit">Edit</a> ]
+</nav>
+<ul>
+	<li>Created: {{item.date_created}}</li>
+	<li>Modified: {{item.date_modified}}</li>
+	<li>Author: {{item.author}}</li>
+</ul>
+<p>Task is currently: 
+	<span ng-show="item.state">Completed</span>
+	<span ng-show="!item.state">Pending</span>
+</p>
+<p>{{item.content}}</p>
